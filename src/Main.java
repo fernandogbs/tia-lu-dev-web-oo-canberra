@@ -1,5 +1,10 @@
 public class Main {
     public static void main(String[] args) {
-      System.out.println("Sistema de Restaurante");
+      try {
+        MenuCLI menu = new MenuCLI();
+        menu.iniciar();
+      } catch (Exception e) {
+        System.out.println("Error: " + e.getMessage());
+      }
     }
 }
