@@ -1,5 +1,5 @@
-import java.util.List;
 import java.util.Scanner;
+import java.util.List;
 
 public class MenuCLI {
     private SistemaRestaurante sistema;
@@ -14,35 +14,31 @@ public class MenuCLI {
         System.out.println("SISTEMA DE GERENCIAMENTO DE RESTAURANTE");
         System.out.println("=======================================");
 
-        while (true) {
+        boolean continuar = true;
+        while (continuar) {
             mostrarMenuPrincipal();
             int opcao = scanner.nextInt();
 
-            try {
-                switch (opcao) {
-                    case 1:
-                        menuCardapio();
-                        break;
-                    case 2:
-                        menuClientes();
-                        break;
-                    case 3:
-                        menuPedidos();
-                        break;
-                    case 4:
-                        menuRelatorios();
-                        break;
-                    case 0:
-                        System.out.println("Obrigado por usar o sistema!");
-                        return;
-                    default:
-                        System.out.println("Opção inválida! Tente novamente.");
-                }
-            } catch (Exception e) {
-                System.out.println("Erro: " + e.getMessage());
+            switch (opcao) {
+                case 1:
+                    menuCardapio();
+                    break;
+                case 2:
+                    menuClientes();
+                    break;
+                case 3:
+                    menuPedidos();
+                    break;
+                case 4:
+                    menuRelatorios();
+                    break;
+                case 0:
+                    continuar = false;
+                    System.out.println("Sistema encerrado!");
+                    break;
+                default:
+                    System.out.println("Opcao invalida!");
             }
-
-            pausar();
         }
     }
 
@@ -57,36 +53,77 @@ public class MenuCLI {
     }
 
     private void menuCardapio() {
-        while (true) {
-            System.out.println("\n=== GERENCIAR CARDÁPIO ===");
-            System.out.println("1. Cadastrar novo item");
-            System.out.println("2. Listar cardápio");
-            System.out.println("0. Voltar ao menu principal");
-            System.out.print("Escolha uma opção: ");
+        boolean voltar = false;
+        while (!voltar) {
+            System.out.println("\n=== GERENCIAR CARDAPIO ===");
+            System.out.println("1. Cadastrar item");
+            System.out.println("2. Listar itens");
+            System.out.println("0. Voltar");
+            System.out.print("Escolha uma opcao: ");
 
             int opcao = scanner.nextInt();
             switch (opcao) {
                 case 1:
-                    cadastrarItemCardapio();
+                    cadastrarItem();
                     break;
                 case 2:
-                    listarCardapio();
+                    listarItens();
                     break;
                 case 0:
-                    return;
+                    voltar = true;
+                    break;
                 default:
-                    System.out.println("Opção inválida!");
+                    System.out.println("Opcao invalida!");
+            }
+        }
+    }
+
+    private void cadastrarItem() {
+        System.out.println("\n--- Cadastrar Item ---");
+
+        System.out.print("Nome do item: ");
+        scanner.nextLine();
+        String nome = scanner.nextLine();
+
+        if (nome.trim().isEmpty()) {
+            System.out.println("Nome nao pode ser vazio!");
+            return;
+        }
+
+        System.out.print("Preco: R$ ");
+        double preco = scanner.nextDouble();
+
+        if (preco <= 0) {
+            System.out.println("Preco deve ser maior que zero!");
+            return;
+        }
+
+        ItemCardapio item = sistema.cadastrarItemCardapio(nome, preco);
+        System.out.println("Item cadastrado com sucesso! Codigo: " + item.getCodigo());
+    }
+
+    private void listarItens() {
+        System.out.println("\n--- CARDAPIO ---");
+        List<ItemCardapio> itens = sistema.listarCardapio();
+
+        if (itens.isEmpty()) {
+            System.out.println("Nenhum item cadastrado.");
+        } else {
+            for (ItemCardapio item : itens) {
+                System.out.printf("%d - %s - R$ %.2f%n",
+                        item.getCodigo(), item.getNome(), item.getPreco());
             }
         }
     }
 
     private void menuClientes() {
-        while (true) {
+        boolean voltar = false;
+        while (!voltar) {
             System.out.println("\n=== GERENCIAR CLIENTES ===");
-            System.out.println("1. Cadastrar novo cliente");
+            System.out.println("1. Cadastrar cliente");
             System.out.println("2. Listar clientes");
-            System.out.println("0. Voltar ao menu principal");
-            System.out.print("Escolha uma opção: ");
+            System.out.println("0. Voltar");
+            System.out.print("Escolha uma opcao: ");
 
             int opcao = scanner.nextInt();
             switch (opcao) {
@@ -97,22 +134,62 @@ public class MenuCLI {
                     listarClientes();
                     break;
                 case 0:
-                    return;
+                    voltar = true;
+                    break;
                 default:
                     System.out.println("Opção inválida!");
             }
         }
     }
 
+    private void cadastrarCliente() {
+        System.out.println("\n--- Cadastrar Cliente ---");
+
+        System.out.print("Nome: ");
+        scanner.nextLine(); // Limpar buffer
+        String nome = scanner.nextLine();
+
+        if (nome.trim().isEmpty()) {
+            System.out.println("Nome nao pode ser vazio!");
+            return;
+        }
+
+        System.out.print("Telefone: ");
+        String telefone = scanner.nextLine();
+
+        if (telefone.trim().isEmpty()) {
+            System.out.println("Telefone nao pode ser vazio!");
+            return;
+        }
+
+        Cliente cliente = sistema.cadastrarCliente(nome, telefone);
+        System.out.println("Cliente cadastrado com sucesso! Codigo: " + cliente.getCodigo());
+    }
+
+    private void listarClientes() {
+        System.out.println("\n--- CLIENTES ---");
+        List<Cliente> clientes = sistema.listarClientes();
+
+        if (clientes.isEmpty()) {
+            System.out.println("Nenhum cliente cadastrado.");
+        } else {
+            for (Cliente cliente : clientes) {
+                System.out.printf("%d - %s - %s%n",
+                        cliente.getCodigo(), cliente.getNome(), cliente.getTelefone());
+            }
+        }
+    }
+
     private void menuPedidos() {
-        while (true) {
+        boolean voltar = false;
+        while (!voltar) {
             System.out.println("\n=== GERENCIAR PEDIDOS ===");
-            System.out.println("1. Criar novo pedido");
-            System.out.println("2. Atualizar status do pedido");
-            System.out.println("3. Consultar pedidos por status");
+            System.out.println("1. Criar pedido");
+            System.out.println("2. Atualizar status");
+            System.out.println("3. Consultar por status");
             System.out.println("4. Listar todos os pedidos");
-            System.out.println("0. Voltar ao menu principal");
-            System.out.print("Escolha uma opção: ");
+            System.out.println("0. Voltar");
+            System.out.print("Escolha uma opcao: ");
 
             int opcao = scanner.nextInt();
             switch (opcao) {
@@ -120,198 +197,131 @@ public class MenuCLI {
                     criarPedido();
                     break;
                 case 2:
-                    atualizarStatusPedido();
+                    atualizarStatus();
                     break;
                 case 3:
-                    consultarPedidosPorStatus();
+                    consultarPorStatus();
                     break;
                 case 4:
                     listarTodosPedidos();
                     break;
                 case 0:
-                    return;
+                    voltar = true;
+                    break;
                 default:
-                    System.out.println("Opção inválida!");
-            }
-        }
-    }
-
-    private void menuRelatorios() {
-        while (true) {
-            System.out.println("\n=== RELATÓRIOS ===");
-            System.out.println("1. Relatório Simplificado");
-            System.out.println("2. Relatório Detalhado");
-            System.out.println("3. Relatório de Métricas Avançadas");
-            System.out.println("0. Voltar ao menu principal");
-            System.out.print("Escolha uma opção: ");
-
-            int opcao = scanner.nextInt();
-            switch (opcao) {
-                case 1:
-                    System.out.println("\n" + sistema.gerarRelatorioSimplificado());
-                    break;
-                case 2:
-                    System.out.println("\n" + sistema.gerarRelatorioDetalhado());
-                    break;
-                case 3:
-                    System.out.println("\n" + sistema.gerarRelatorioMetricas());
-                    break;
-                case 0:
-                    return;
-                default:
-                    System.out.println("Opção inválida!");
-            }
-        }
-    }    private void cadastrarItemCardapio() {
-        System.out.println("\n--- Cadastrar Item do Cardápio ---");
-        System.out.print("Nome do item: ");
-        String nome = scanner.nextLine();
-
-        System.out.print("Preço (R$): ");
-        double preco = scanner.nextDouble();
-
-        ItemCardapio item = sistema.cadastrarItemCardapio(nome, preco);
-        System.out.println("Item cadastrado com sucesso!");
-        System.out.println("Codigo: " + item.getCodigo() + " - " + item.getNome() + " - R$ " + String.format("%.2f", item.getPreco()));
-    }
-
-    private void listarCardapio() {
-        System.out.println("\n--- CARDÁPIO ---");
-        List<ItemCardapio> cardapio = sistema.listarCardapio();
-
-        if (cardapio.isEmpty()) {
-            System.out.println("Nenhum item cadastrado no cardápio.");
-        } else {
-            System.out.printf("%-8s %-30s %10s%n", "CÓDIGO", "NOME", "PREÇO");
-            System.out.println("--------------------------------------------------");
-            for (ItemCardapio item : cardapio) {
-                System.out.printf("%-8d %-30s R$ %7.2f%n",
-                    item.getCodigo(), item.getNome(), item.getPreco());
-            }
-        }
-    }
-
-    private void cadastrarCliente() {
-        System.out.println("\n--- Cadastrar Cliente ---");
-        System.out.print("Nome do cliente: ");
-        String nome = scanner.nextLine();
-
-        System.out.print("Telefone: ");
-        String telefone = scanner.nextLine();
-
-        Cliente cliente = sistema.cadastrarCliente(nome, telefone);
-        System.out.println("Cliente cadastrado com sucesso!");
-        System.out.println("Codigo: " + cliente.getCodigo() + " - " + cliente.getNome() + " - " + cliente.getTelefone());
-    }
-
-    private void listarClientes() {
-        System.out.println("\n--- CLIENTES CADASTRADOS ---");
-        List<Cliente> clientes = sistema.listarClientes();
-
-        if (clientes.isEmpty()) {
-            System.out.println("Nenhum cliente cadastrado.");
-        } else {
-            System.out.printf("%-8s %-25s %15s%n", "CÓDIGO", "NOME", "TELEFONE");
-            System.out.println("---------------------------------------------------");
-            for (Cliente cliente : clientes) {
-                System.out.printf("%-8d %-25s %15s%n",
-                    cliente.getCodigo(), cliente.getNome(), cliente.getTelefone());
+                    System.out.println("Opcao invalida!");
             }
         }
     }
 
     private void criarPedido() {
-        System.out.println("\n--- Criar Novo Pedido ---");
+        System.out.println("\n--- Criar Pedido ---");
 
         listarClientes();
+        if (sistema.listarClientes().isEmpty()) {
+            System.out.println("Nenhum cliente cadastrado!");
+            return;
+        }
 
         System.out.print("Código do cliente: ");
         int codigoCliente = scanner.nextInt();
 
-        try {
-            Pedido pedido = sistema.criarPedido(codigoCliente);
-            System.out.println("Pedido criado com sucesso!");
-            System.out.println("Número do pedido: " + pedido.getNumero());
-            System.out.println("Cliente: " + pedido.getCliente().getNome());
+        Cliente cliente = sistema.buscarCliente(codigoCliente);
+        if (cliente == null) {
+            System.out.println("Cliente nao encontrado!");
+            return;
+        }
 
-            while (true) {
-                System.out.println("\n--- Adicionar Itens ao Pedido ---");
-                listarCardapio();
+        Pedido pedido = sistema.criarPedido(cliente.getCodigo());
+        System.out.println("Pedido criado! Numero: " + pedido.getNumero());
 
-                System.out.print("Código do item (0 para finalizar): ");
-                int codigoItem = scanner.nextInt();
+        boolean adicionandoItens = true;
+        while (adicionandoItens) {
+            listarItens();
+            if (sistema.listarCardapio().isEmpty()) {
+                System.out.println("Nenhum item no cardapio!");
+                break;
+            }
 
-                if (codigoItem == 0) {
-                    break;
+            System.out.print("Codigo do item (0 para finalizar): ");
+            int codigoItem = scanner.nextInt();
+
+            if (codigoItem == 0) {
+                adicionandoItens = false;
+            } else {
+                ItemCardapio item = sistema.buscarItemCardapio(codigoItem);
+                if (item == null) {
+                    System.out.println("Item nao encontrado!");
+                    continue;
                 }
 
                 System.out.print("Quantidade: ");
                 int quantidade = scanner.nextInt();
-
-                if (sistema.adicionarItemAoPedido(pedido.getNumero(), codigoItem, quantidade)) {
-                    ItemCardapio item = sistema.buscarItemCardapio(codigoItem);
-                    System.out.println("Item adicionado: " + item.getNome() + " x" + quantidade);
-                } else {
-                    System.out.println("Erro ao adicionar item. Verifique o código do item.");
+                if (quantidade <= 0) {
+                    System.out.println("Quantidade deve ser maior que zero!");
+                    continue;
                 }
+
+                sistema.adicionarItemAoPedido(pedido.getNumero(), item.getCodigo(), quantidade);
+                System.out.println("Item adicionado ao pedido!");
             }
-
-            Pedido pedidoAtualizado = sistema.buscarPedido(pedido.getNumero());
-            System.out.println("\n" + pedidoAtualizado.toStringDetalhado());
-
-        } catch (Exception e) {
-            System.out.println("Erro ao criar pedido: " + e.getMessage());
         }
+
+        System.out.printf("Pedido finalizado! Total: R$ %.2f%n", pedido.getValorTotal());
     }
 
-    private void atualizarStatusPedido() {
-        System.out.println("\n--- Atualizar Status do Pedido ---");
+    private void atualizarStatus() {
+        System.out.println("\n--- Atualizar Status ---");
+
         listarTodosPedidos();
+        if (sistema.listarTodosPedidos().isEmpty()) {
+            System.out.println("Nenhum pedido encontrado!");
+            return;
+        }
 
-        System.out.print("Número do pedido: ");
-        int numeroPedido = scanner.nextInt();
+        System.out.print("Numero do pedido: ");
+        int numero = scanner.nextInt();
 
-        Pedido pedido = sistema.buscarPedido(numeroPedido);
+        Pedido pedido = sistema.buscarPedido(numero);
         if (pedido == null) {
             System.out.println("Pedido não encontrado!");
             return;
         }
 
-        System.out.println("Status atual: " + pedido.getStatus());
-
-        if (sistema.atualizarStatusPedido(numeroPedido)) {
-            Pedido pedidoAtualizado = sistema.buscarPedido(numeroPedido);
-            System.out.println("Status atualizado para: " + pedidoAtualizado.getStatus());
+        StatusPedido novoStatus = sistema.atualizarStatusPedido(pedido.getNumero());
+        if (novoStatus != null) {
+            System.out.println("Status atualizado para: " + novoStatus);
         } else {
             System.out.println("Não foi possível atualizar o status (pedido já pode estar finalizado).");
         }
     }
 
-    private void consultarPedidosPorStatus() {
-        System.out.println("\n--- Consultar Pedidos por Status ---");
-        System.out.println("Status disponíveis:");
-        StatusPedido[] statuses = StatusPedido.values();
-        for (int i = 0; i < statuses.length; i++) {
-            System.out.println((i + 1) + ". " + statuses[i]);
+    private void consultarPorStatus() {
+        System.out.println("\n--- Consultar por Status ---");
+        System.out.println("Status disponiveis:");
+        StatusPedido[] status = StatusPedido.values();
+        for (int i = 0; i < status.length; i++) {
+            System.out.println((i + 1) + ". " + status[i]);
         }
 
-        System.out.print("Escolha o status (1-" + statuses.length + "): ");
+        System.out.print("Escolha o status: ");
         int opcao = scanner.nextInt();
 
-        if (opcao < 1 || opcao > statuses.length) {
-            System.out.println("Opção inválida!");
+        if (opcao < 1 || opcao > status.length) {
+            System.out.println("Opcao invalida!");
             return;
         }
 
-        StatusPedido statusEscolhido = statuses[opcao - 1];
+        StatusPedido statusEscolhido = status[opcao - 1];
         List<Pedido> pedidos = sistema.consultarPedidosPorStatus(statusEscolhido);
 
-        System.out.println("\n--- Pedidos com status: " + statusEscolhido + " ---");
         if (pedidos.isEmpty()) {
-            System.out.println("Nenhum pedido encontrado com este status.");
+            System.out.println("Nenhum pedido com status: " + statusEscolhido);
         } else {
+            System.out.println("\nPedidos com status " + statusEscolhido + ":");
             for (Pedido pedido : pedidos) {
-                System.out.println(pedido);
+                System.out.printf("Pedido %d - Cliente: %s - Total: R$ %.2f%n",
+                        pedido.getNumero(), pedido.getCliente().getNome(), pedido.getValorTotal());
             }
         }
     }
@@ -321,16 +331,75 @@ public class MenuCLI {
         List<Pedido> pedidos = sistema.listarTodosPedidos();
 
         if (pedidos.isEmpty()) {
-            System.out.println("Nenhum pedido registrado.");
+            System.out.println("Nenhum pedido encontrado.");
         } else {
             for (Pedido pedido : pedidos) {
-                System.out.println(pedido);
+                System.out.printf("Pedido %d - Cliente: %s - Status: %s - Total: R$ %.2f%n",
+                        pedido.getNumero(), pedido.getCliente().getNome(),
+                        pedido.getStatus(), pedido.getValorTotal());
             }
         }
     }
 
-    private void pausar() {
-        System.out.println("\nPressione ENTER para continuar...");
-        scanner.nextLine();
+    private void menuRelatorios() {
+        boolean voltar = false;
+        while (!voltar) {
+            System.out.println("\n=== RELATORIOS ===");
+            System.out.println("1. Relatorio simplificado");
+            System.out.println("2. Relatorio detalhado");
+            System.out.println("0. Voltar");
+            System.out.print("Escolha uma opcao: ");
+
+            int opcao = scanner.nextInt();
+            switch (opcao) {
+                case 1:
+                    relatorioSimplificado();
+                    break;
+                case 2:
+                    relatorioDetalhado();
+                    break;
+                case 0:
+                    voltar = true;
+                    break;
+                default:
+                    System.out.println("Opcao invalida!");
+            }
+        }
+    }
+
+    private void relatorioSimplificado() {
+        System.out.println("\n--- RELATORIO SIMPLIFICADO ---");
+        String relatorioSimplificado = sistema.gerarRelatorioSimplificado();
+        System.out.println(relatorioSimplificado);
+    }
+
+    private void relatorioDetalhado() {
+        System.out.println("\n--- RELATORIO DETALHADO ---");
+        List<Pedido> pedidos = sistema.listarTodosPedidos();
+
+        if (pedidos.isEmpty()) {
+            System.out.println("Nenhum pedido encontrado.");
+            return;
+        }
+
+        double totalGeral = 0;
+        for (Pedido pedido : pedidos) {
+            System.out.printf("\nPedido %d - Cliente: %s (%s)%n",
+                    pedido.getNumero(), pedido.getCliente().getNome(),
+                    pedido.getCliente().getTelefone());
+            System.out.println("Status: " + pedido.getStatus());
+            System.out.println("Itens:");
+
+            for (PedidoItem item : pedido.getItens()) {
+                System.out.printf("  - %s x%d = R$ %.2f%n",
+                        item.getItem().getNome(), item.getQuantidade(), item.getSubtotal());
+            }
+
+            System.out.printf("Total do pedido: R$ %.2f%n", pedido.getValorTotal());
+            totalGeral += pedido.getValorTotal();
+            System.out.println("--------------------");
+        }
+
+        System.out.printf("\nTOTAL GERAL: R$ %.2f%n", totalGeral);
     }
 }

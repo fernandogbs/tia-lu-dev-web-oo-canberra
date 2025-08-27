@@ -76,20 +76,20 @@ public class SistemaRestaurante {
         return true;
     }
 
-    public boolean atualizarStatusPedido(int numeroPedido) {
-        Pedido pedido = centralDeDados.buscarPedidoPorNumero(numeroPedido);
-        if (pedido == null) {
-            return false;
-        }
+    public StatusPedido atualizarStatusPedido(int numeroPedido) {
+      Pedido pedido = centralDeDados.buscarPedidoPorNumero(numeroPedido);
+      if (pedido == null) {
+        return null;
+      }
 
-        StatusPedido statusAnterior = pedido.getStatus();
-        pedido.avancarStatus();
+      StatusPedido statusAnterior = pedido.getStatus();
+      pedido.avancarStatus();
 
-        if (pedido.getStatus() == StatusPedido.SAIU_PARA_ENTREGA) {
-            notificarSaidaParaEntrega(pedido);
-        }
+      if (pedido.getStatus() == StatusPedido.SAIU_PARA_ENTREGA) {
+        notificarSaidaParaEntrega(pedido);
+      }
 
-        return pedido.getStatus() != statusAnterior;
+      return pedido.getStatus() != statusAnterior ? pedido.getStatus() : statusAnterior;
     }
 
     public List<Pedido> consultarPedidosPorStatus(StatusPedido status) {
