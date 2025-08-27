@@ -98,20 +98,20 @@ public class MenuCLI {
             return;
         }
 
-        ItemCardapio item = sistema.cadastrarItem(nome, preco);
+        ItemCardapio item = sistema.cadastrarItemCardapio(nome, preco);
         System.out.println("Item cadastrado com sucesso! Codigo: " + item.getCodigo());
     }
 
     private void listarItens() {
         System.out.println("\n--- CARDAPIO ---");
-        List<ItemCardapio> itens = sistema.listarItens();
+        List<ItemCardapio> itens = sistema.listarCardapio();
 
         if (itens.isEmpty()) {
             System.out.println("Nenhum item cadastrado.");
         } else {
             for (ItemCardapio item : itens) {
                 System.out.printf("%d - %s - R$ %.2f%n",
-                    item.getCodigo(), item.getNome(), item.getPreco());
+                        item.getCodigo(), item.getNome(), item.getPreco());
             }
         }
     }
@@ -175,7 +175,7 @@ public class MenuCLI {
         } else {
             for (Cliente cliente : clientes) {
                 System.out.printf("%d - %s - %s%n",
-                    cliente.getCodigo(), cliente.getNome(), cliente.getTelefone());
+                        cliente.getCodigo(), cliente.getNome(), cliente.getTelefone());
             }
         }
     }
@@ -226,19 +226,19 @@ public class MenuCLI {
         System.out.print("Código do cliente: ");
         int codigoCliente = scanner.nextInt();
 
-        Cliente cliente = sistema.buscarClientePorCodigo(codigoCliente);
+        Cliente cliente = sistema.buscarCliente(codigoCliente);
         if (cliente == null) {
             System.out.println("Cliente nao encontrado!");
             return;
         }
 
-        Pedido pedido = sistema.criarPedido(cliente);
+        Pedido pedido = sistema.criarPedido(cliente.getCodigo());
         System.out.println("Pedido criado! Numero: " + pedido.getNumero());
 
         boolean adicionandoItens = true;
         while (adicionandoItens) {
             listarItens();
-            if (sistema.listarItens().isEmpty()) {
+            if (sistema.listarCardapio().isEmpty()) {
                 System.out.println("Nenhum item no cardapio!");
                 break;
             }
@@ -249,7 +249,7 @@ public class MenuCLI {
             if (codigoItem == 0) {
                 adicionandoItens = false;
             } else {
-                ItemCardapio item = sistema.buscarItemPorCodigo(codigoItem);
+                ItemCardapio item = sistema.buscarItemCardapio(codigoItem);
                 if (item == null) {
                     System.out.println("Item nao encontrado!");
                     continue;
@@ -262,19 +262,19 @@ public class MenuCLI {
                     continue;
                 }
 
-                sistema.adicionarItemAoPedido(pedido, item, quantidade);
+                sistema.adicionarItemAoPedido(pedido.getNumero(), item.getCodigo(), quantidade);
                 System.out.println("Item adicionado ao pedido!");
             }
         }
 
-        System.out.printf("Pedido finalizado! Total: R$ %.2f%n", pedido.getTotal());
+        System.out.printf("Pedido finalizado! Total: R$ %.2f%n", pedido.getValorTotal());
     }
 
     private void atualizarStatus() {
         System.out.println("\n--- Atualizar Status ---");
 
         listarTodosPedidos();
-        if (sistema.listarPedidos().isEmpty()) {
+        if (sistema.listarTodosPedidos().isEmpty()) {
             System.out.println("Nenhum pedido encontrado!");
             return;
         }
@@ -282,13 +282,13 @@ public class MenuCLI {
         System.out.print("Numero do pedido: ");
         int numero = scanner.nextInt();
 
-        Pedido pedido = sistema.buscarPedidoPorNumero(numero);
+        Pedido pedido = sistema.buscarPedido(numero);
         if (pedido == null) {
             System.out.println("Pedido não encontrado!");
             return;
         }
 
-        StatusPedido novoStatus = sistema.avancarStatus(pedido);
+        StatusPedido novoStatus = sistema.atualizarStatusPedido(pedido.getNumero());
         if (novoStatus != null) {
             System.out.println("Status atualizado para: " + novoStatus);
         } else {
@@ -313,7 +313,7 @@ public class MenuCLI {
         }
 
         StatusPedido statusEscolhido = status[opcao - 1];
-        List<Pedido> pedidos = sistema.listarPedidosPorStatus(statusEscolhido);
+        List<Pedido> pedidos = sistema.consultarPedidosPorStatus(statusEscolhido);
 
         if (pedidos.isEmpty()) {
             System.out.println("Nenhum pedido com status: " + statusEscolhido);
@@ -321,22 +321,22 @@ public class MenuCLI {
             System.out.println("\nPedidos com status " + statusEscolhido + ":");
             for (Pedido pedido : pedidos) {
                 System.out.printf("Pedido %d - Cliente: %s - Total: R$ %.2f%n",
-                    pedido.getNumero(), pedido.getCliente().getNome(), pedido.getTotal());
+                        pedido.getNumero(), pedido.getCliente().getNome(), pedido.getValorTotal());
             }
         }
     }
 
     private void listarTodosPedidos() {
         System.out.println("\n--- TODOS OS PEDIDOS ---");
-        List<Pedido> pedidos = sistema.listarPedidos();
+        List<Pedido> pedidos = sistema.listarTodosPedidos();
 
         if (pedidos.isEmpty()) {
             System.out.println("Nenhum pedido encontrado.");
         } else {
             for (Pedido pedido : pedidos) {
                 System.out.printf("Pedido %d - Cliente: %s - Status: %s - Total: R$ %.2f%n",
-                    pedido.getNumero(), pedido.getCliente().getNome(),
-                    pedido.getStatus(), pedido.getTotal());
+                        pedido.getNumero(), pedido.getCliente().getNome(),
+                        pedido.getStatus(), pedido.getValorTotal());
             }
         }
     }
@@ -369,16 +369,13 @@ public class MenuCLI {
 
     private void relatorioSimplificado() {
         System.out.println("\n--- RELATORIO SIMPLIFICADO ---");
-        int totalPedidos = sistema.getTotalPedidos();
-        double valorArrecadado = sistema.getValorArrecadado();
-
-        System.out.println("Total de pedidos: " + totalPedidos);
-        System.out.printf("Valor arrecadado: R$ %.2f%n", valorArrecadado);
+        String relatorioSimplificado = sistema.gerarRelatorioSimplificado();
+        System.out.println(relatorioSimplificado);
     }
 
     private void relatorioDetalhado() {
         System.out.println("\n--- RELATORIO DETALHADO ---");
-        List<Pedido> pedidos = sistema.listarPedidos();
+        List<Pedido> pedidos = sistema.listarTodosPedidos();
 
         if (pedidos.isEmpty()) {
             System.out.println("Nenhum pedido encontrado.");
@@ -388,18 +385,18 @@ public class MenuCLI {
         double totalGeral = 0;
         for (Pedido pedido : pedidos) {
             System.out.printf("\nPedido %d - Cliente: %s (%s)%n",
-                pedido.getNumero(), pedido.getCliente().getNome(),
-                pedido.getCliente().getTelefone());
+                    pedido.getNumero(), pedido.getCliente().getNome(),
+                    pedido.getCliente().getTelefone());
             System.out.println("Status: " + pedido.getStatus());
             System.out.println("Itens:");
 
             for (PedidoItem item : pedido.getItens()) {
                 System.out.printf("  - %s x%d = R$ %.2f%n",
-                    item.getItem().getNome(), item.getQuantidade(), item.getSubtotal());
+                        item.getItem().getNome(), item.getQuantidade(), item.getSubtotal());
             }
 
-            System.out.printf("Total do pedido: R$ %.2f%n", pedido.getTotal());
-            totalGeral += pedido.getTotal();
+            System.out.printf("Total do pedido: R$ %.2f%n", pedido.getValorTotal());
+            totalGeral += pedido.getValorTotal();
             System.out.println("--------------------");
         }
 
